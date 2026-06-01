@@ -1,3 +1,10 @@
+// ============================================================
+// authMiddleware — Protege rutas con JWT
+// ============================================================
+// Extrae el token del header Authorization: Bearer <token>,
+// lo verifica con verifyToken() y mete los datos decodificados
+// en req.user para que los controladores los usen.
+
 import { verifyToken } from '../utils/jwt.js';
 
 export const authMiddleware = (req, res, next) => {

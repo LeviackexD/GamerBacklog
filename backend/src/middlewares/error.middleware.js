@@ -1,3 +1,13 @@
+// ============================================================
+// errorMiddleware — Manejador global de errores
+// ============================================================
+// Express llama a este middleware cuando un controlador lanza
+// una excepción (next(err)). Según el tipo de error, responde
+// con el código HTTP adecuado y un mensaje claro.
+// - ZodError → 400 con detalle de cada campo inválido
+// - AppError (ConflictError, NotFoundError, UnauthorizedError) → su status
+// - Cualquier otro → 500 genérico
+
 import { ZodError } from 'zod';
 import { AppError } from '../lib/errors.js';
 

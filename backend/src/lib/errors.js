@@ -1,3 +1,10 @@
+// ============================================================
+// Clases de error personalizadas
+// ============================================================
+// Todas heredan de AppError que añade un status HTTP.
+// El middleware error.middleware.js captura estos errores y
+// responde con el código correcto (404, 401, 409, etc.).
+
 export class AppError extends Error {
   constructor(message, status) {
     super(message);

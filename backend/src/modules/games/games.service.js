@@ -13,11 +13,11 @@ export class GamesService {
     return prisma.game.create({ data });
   }
 
-  async update(id, data) {
-    return prisma.game.update({ where: { id }, data });
+  async update(id, userId, data) {
+    return prisma.game.update({ where: { id, userId }, data });
   }
 
-  async delete(id) {
-    return prisma.game.delete({ where: { id } });
+  async delete(id, userId) {
+    return prisma.game.delete({ where: { id, userId } });
   }
 }
