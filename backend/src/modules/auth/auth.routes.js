@@ -9,3 +9,5 @@ authRouter.get('/me', authMiddleware, authController.me);
 authRouter.get('/stats', authMiddleware, authController.stats);
 authRouter.post('/register', authLimiter, authController.register);
 authRouter.post('/login', authLimiter, authController.login);
+authRouter.post('/forgot-password', authLimiter, authController.forgotPassword);
+authRouter.post('/reset-password', authLimiter, authController.resetPassword);

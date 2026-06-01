@@ -1,5 +1,5 @@
 import { AuthUseCases } from './auth.useCases.js';
-import { registerSchema, loginSchema } from './auth.schemas.js';
+import { registerSchema, loginSchema, forgotPasswordSchema, resetPasswordSchema } from './auth.schemas.js';
 
 const authUseCases = new AuthUseCases();
 
@@ -37,6 +37,27 @@ export const authController = {
     try {
       const data = await authUseCases.getStats(req.user.id);
       res.json({ success: true, data });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  async forgotPassword(req, res, next) {
+    try {
+      const parsed = forgotPasswordSchema.parse(req.body);
+      const result = await authUseCases.forgotPassword(parsed);
+      res.json({ success: true, data: result });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  async resetPassword(req, res, next) {
+    try {
+      const parsed = resetPasswordSchema.parse(req.body);
+      const { passwordRepeat, ...payload } = parsed;
+      const result = await authUseCases.resetPassword(payload);
+      res.json({ success: true, data: result });
     } catch (error) {
       next(error);
     }

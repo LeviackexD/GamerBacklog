@@ -19,4 +19,27 @@ export class AuthService {
       orderBy: { completedAt: 'desc' },
     });
   }
+
+  async createPasswordResetToken(data) {
+    return prisma.passwordResetToken.create({ data });
+  }
+
+  async findPasswordResetToken(token) {
+    return prisma.passwordResetToken.findUnique({ where: { token } });
+  }
+
+  async markTokenAsUsed(id) {
+    return prisma.passwordResetToken.update({ where: { id }, data: { used: true } });
+  }
+
+  async invalidateOldTokens(userId) {
+    return prisma.passwordResetToken.updateMany({
+      where: { userId, used: false },
+      data: { used: true },
+    });
+  }
+
+  async updatePassword(userId, hashedPassword) {
+    return prisma.user.update({ where: { id: userId }, data: { password: hashedPassword } });
+  }
 }
