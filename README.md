@@ -1,4 +1,4 @@
-# 🎮 TFC Gamer
+# 🎮 GamerBacklog
 
 **Gestiona y prioriza tu backlog de videojuegos** — aplicación full-stack con estética retro-pixel, autenticación JWT, CRUD completo de juegos, y algoritmo de prioridad inteligente.
 
