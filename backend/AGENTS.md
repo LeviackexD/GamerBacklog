@@ -12,7 +12,7 @@ Sprint 2 completado (backend + frontend) ✅ — Backend con autenticación JWT,
 - Node.js / Express
 - JavaScript ES modules
 - Prisma ORM / MySQL (Aiven)
-- Zod / bcrypt / jsonwebtoken
+- Zod / argon2 / jsonwebtoken
 
 ### Frontend
 - Vue 3 (Composition API)
@@ -22,10 +22,12 @@ Sprint 2 completado (backend + frontend) ✅ — Backend con autenticación JWT,
 
 ## Estructura principal
 ```
-src/
-  config/
-    env.js             Variables de entorno
-    prisma.js          Cliente Prisma centralizado
+  src/
+    config/
+      env.js             Variables de entorno (incluye RESEND_API_KEY, APP_URL)
+      prisma.js          Cliente Prisma centralizado
+    email/
+      sendEmail.js       Envío de emails con Resend (password reset)
   docs/
     api-spec.md        Especificación de endpoints
     architecture.md    Decisiones técnicas y estructura
@@ -39,11 +41,11 @@ src/
     rate-limit.middleware.js  Rate limiting para /login y /register
   modules/
     auth/
-      auth.routes.js       POST /register, POST /login, GET /me
+      auth.routes.js       POST /register, POST /login, GET /me, GET /stats, POST /forgot-password, POST /reset-password
       auth.controller.js   Valida con Zod, llama al use case
-      auth.useCases.js     Lógica de negocio: register, login
-      auth.service.js      Solo consultas Prisma
-      auth.schemas.js      Schemas Zod (register, login)
+      auth.useCases.js     Lógica de negocio: register, login, forgot/reset password, stats
+      auth.service.js      Solo consultas Prisma (incluye tokens de reset)
+      auth.schemas.js      Schemas Zod (register, login, forgot-password, reset-password)
     games/
       games.routes.js      Rutas REST protegidas
       games.controller.js  Valida con Zod, llama al use case
@@ -77,8 +79,11 @@ src/
 |--------|------|------|-------------|
 | GET | /api/health | No | Health check |
 | GET | /api/auth/me | Sí | Perfil del usuario autenticado |
+| GET | /api/auth/stats | Sí | Estadísticas del usuario (nivel, clase, categorías) |
 | POST | /api/auth/register | No (rate-limited) | Registrar usuario |
 | POST | /api/auth/login | No (rate-limited) | Login |
+| POST | /api/auth/forgot-password | No (rate-limited) | Solicitar restablecimiento de contraseña |
+| POST | /api/auth/reset-password | No (rate-limited) | Restablecer contraseña con token |
 | GET | /api/games | Sí | Listar con filtros (search, category, tag, completed) y ordenación (sortBy, order) |
 | GET | /api/games/:id | Sí | Obtener juego por ID |
 | POST | /api/games | Sí | Crear juego (calcula priorityScore) |
@@ -102,8 +107,13 @@ src/
 - Registro: email, password (min 8), alias
 - Login: email, password → devuelve token + user
 - Token JWT con expiración configurable (default: 7 días)
-- Contraseñas hasheadas con bcrypt (12 salt rounds)
+- Contraseñas hasheadas con argon2
+- Password reset: token aleatorio de 32 bytes, expira en 1h, envío por Resend
 - Cada juego asociado a su userId (obligatorio)
+
+## Password Reset
+- `POST /api/auth/forgot-password`: recibe email, genera token, lo almacena en `PasswordResetToken`, envía email con Resend. Siempre devuelve el mismo mensaje (exista o no el email) para evitar enumeración de usuarios.
+- `POST /api/auth/reset-password`: recibe `token` + `password` + `passwordRepeat`, valida el token (no expirado, no usado), actualiza la contraseña con argon2 y marca el token como usado.
 
 ## Comandos útiles
 - npm install

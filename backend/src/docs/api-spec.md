@@ -4,6 +4,7 @@
 ```
 http://localhost:4000/api
 ```
+Via Nuxt proxy: `http://localhost:3000/api`
 
 ## Response format
 
@@ -44,11 +45,173 @@ http://localhost:4000/api
 
 ---
 
+### Register
+
+`POST /api/auth/register`
+
+**Rate limited.** **Body:**
+| Campo | Tipo | Obligatorio | Descripción |
+|-------|------|-------------|-------------|
+| email | string | sí | Email del usuario |
+| password | string | sí | Mínimo 8 caracteres |
+| alias | string | sí | Nombre visible (2-30 caracteres) |
+
+**Response (201):**
+```json
+{
+  "success": true,
+  "data": {
+    "token": "jwt...",
+    "user": { "id": 1, "email": "user@test.com", "alias": "Player1" }
+  }
+}
+```
+
+---
+
+### Login
+
+`POST /api/auth/login`
+
+**Rate limited.** **Body:**
+| Campo | Tipo | Obligatorio | Descripción |
+|-------|------|-------------|-------------|
+| email | string | sí | Email del usuario |
+| password | string | sí | Contraseña |
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "data": {
+    "token": "jwt...",
+    "user": { "id": 1, "email": "user@test.com", "alias": "Player1" }
+  }
+}
+```
+
+**Response (401):**
+```json
+{
+  "success": false,
+  "message": "Email o contraseña incorrectos"
+}
+```
+
+---
+
+### Get current user
+
+`GET /api/auth/me`
+
+**Auth required.** **Response (200):**
+```json
+{
+  "success": true,
+  "data": {
+    "id": 1,
+    "email": "user@test.com",
+    "alias": "Player1",
+    "createdAt": "2026-05-28T16:00:00.000Z"
+  }
+}
+```
+
+---
+
+### Get user stats
+
+`GET /api/auth/stats`
+
+**Auth required.** **Response (200):**
+```json
+{
+  "success": true,
+  "data": {
+    "user": { "id": 1, "email": "user@test.com", "alias": "Player1" },
+    "stats": {
+      "totalGames": 10,
+      "completedGames": 3,
+      "totalHours": 120,
+      "averageRating": 4.2,
+      "completionRate": 30,
+      "level": 1,
+      "xpPercent": 0,
+      "classTitle": "Novato",
+      "recentCompleted": [
+        { "name": "Zelda", "rating": 5, "hoursToBeat": 55 }
+      ],
+      "categoryBreakdown": [
+        { "category": "RPG", "count": 4, "percent": 40 }
+      ]
+    }
+  }
+}
+```
+
+---
+
+### Forgot password
+
+`POST /api/auth/forgot-password`
+
+**Rate limited.** **Body:**
+| Campo | Tipo | Obligatorio | Descripción |
+|-------|------|-------------|-------------|
+| email | string | sí | Email del usuario |
+
+Siempre devuelve el mismo mensaje (exista o no el email). Si el email existe,
+genera un token de 32 bytes, lo almacena en `PasswordResetToken` con expiración
+de 1 hora, y envía un email con el enlace vía Resend.
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "data": {
+    "message": "Si el email existe, recibirás un enlace para restablecer tu contraseña"
+  }
+}
+```
+
+---
+
+### Reset password
+
+`POST /api/auth/reset-password`
+
+**Rate limited.** **Body:**
+| Campo | Tipo | Obligatorio | Descripción |
+|-------|------|-------------|-------------|
+| token | string | sí | Token recibido por email |
+| password | string | sí | Nueva contraseña (mínimo 8 caracteres) |
+| passwordRepeat | string | sí | Debe coincidir con password |
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "data": {
+    "message": "Contraseña actualizada correctamente"
+  }
+}
+```
+
+**Response (401):**
+```json
+{
+  "success": false,
+  "message": "Token inválido o expirado"
+}
+```
+
+---
+
 ### Create game
 
 `POST /api/games`
 
-**Body:**
+**Auth required.** **Body:**
 | Campo | Tipo | Obligatorio | Descripción |
 |-------|------|-------------|-------------|
 | name | string | sí | Nombre del juego |
@@ -88,7 +251,7 @@ http://localhost:4000/api
 
 `GET /api/games`
 
-**Query params (todos opcionales):**
+**Auth required.** **Query params (todos opcionales):**
 | Parámetro | Valores | Descripción |
 |-----------|---------|-------------|
 | search | string | Búsqueda parcial por nombre |
@@ -102,9 +265,7 @@ http://localhost:4000/api
 ```json
 {
   "success": true,
-  "data": [
-    { ... juego ... }
-  ]
+  "data": [ { ... juego ... } ]
 }
 ```
 
@@ -114,13 +275,10 @@ http://localhost:4000/api
 
 `GET /api/games/:id`
 
-**Response (200):** Game object
+**Auth required.** **Response (200):** Game object
 **Response (404):**
 ```json
-{
-  "success": false,
-  "message": "Juego no encontrado"
-}
+{ "success": false, "message": "Juego no encontrado" }
 ```
 
 ---
@@ -129,16 +287,9 @@ http://localhost:4000/api
 
 `PUT /api/games/:id`
 
-**Body:** Mismos campos que create, todos opcionales (partial). Si se envían `metacriticScore` o `hoursToBeat`, se recalcula `priorityScore`.
+**Auth required.** **Body:** Mismos campos que create, todos opcionales. Si se envían `metacriticScore` o `hoursToBeat`, se recalcula `priorityScore`.
 
 **Response (200):** Game object actualizado
-**Response (404):**
-```json
-{
-  "success": false,
-  "message": "Juego no encontrado"
-}
-```
 
 ---
 
@@ -146,20 +297,11 @@ http://localhost:4000/api
 
 `DELETE /api/games/:id`
 
-**Response (200):**
+**Auth required.** **Response (200):**
 ```json
 {
   "success": true,
-  "data": {
-    "message": "Juego eliminado correctamente"
-  }
-}
-```
-**Response (404):**
-```json
-{
-  "success": false,
-  "message": "Juego no encontrado"
+  "data": { "message": "Juego eliminado correctamente" }
 }
 ```
 
@@ -169,7 +311,7 @@ http://localhost:4000/api
 
 `PATCH /api/games/:id/complete`
 
-**Body:**
+**Auth required.** **Body:**
 | Campo | Tipo | Obligatorio | Descripción |
 |-------|------|-------------|-------------|
 | notes | string | no | Notas al completar |
@@ -177,11 +319,12 @@ http://localhost:4000/api
 
 Establece `completed: true` y `completedAt` con la fecha actual automáticamente.
 
-**Response (200):** Game object con completed=true y fecha de finalización
-**Response (404):**
-```json
-{
-  "success": false,
-  "message": "Juego no encontrado"
-}
-```
+---
+
+### Uncomplete game
+
+`PATCH /api/games/:id/uncomplete`
+
+**Auth required.** Revierte `completed: false`, limpia `completedAt`, `notes`, `rating`.
+
+**Response (200):** Game object restaurado
