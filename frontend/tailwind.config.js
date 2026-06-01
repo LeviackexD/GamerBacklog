@@ -1,8 +1,7 @@
 /** @type {import('tailwindcss').Config} */
 export default {
   content: [
-    "./index.html",
-    "./src/**/*.{vue,js,ts,jsx,tsx}",
+    "./app/**/*.{vue,js,ts,jsx,tsx}",
   ],
   theme: {
     extend: {
@@ -12,15 +11,15 @@ export default {
       },
       colors: {
         retro: {
-          black: '#0f0e17',
-          dark: '#1a1932',
-          border: '#2d2b55',
+          black: '#1a1a3e',
+          dark: '#252550',
+          border: '#3d3d7b',
           red: '#ff6b6b',
           cyan: '#48dbfb',
           yellow: '#feca57',
           green: '#5fcf80',
           text: '#fffffe',
-          mute: '#a7a9be',
+          mute: '#c4c6d8',
         }
       },
       boxShadow: {
@@ -33,6 +32,7 @@ export default {
         'pulse-glow': 'pulseGlow 2s ease-in-out infinite alternate',
         'fade-in': 'fadeIn 0.3s ease-out',
         'slide-up': 'slideUp 0.3s ease-out',
+        'avatar-idle': 'avatarIdle 2.5s ease-in-out infinite',
       },
       keyframes: {
         pulseGlow: {
@@ -46,6 +46,12 @@ export default {
         slideUp: {
           '0%': { opacity: '0', transform: 'translateY(20px)' },
           '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        avatarIdle: {
+          '0%, 100%': { transform: 'translateY(0px) rotate(0deg)' },
+          '25%': { transform: 'translateY(-4px) rotate(-1deg)' },
+          '50%': { transform: 'translateY(-8px) rotate(0deg)' },
+          '75%': { transform: 'translateY(-4px) rotate(1deg)' },
         },
       },
     },
